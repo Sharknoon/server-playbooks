@@ -1,0 +1,2 @@
+[home]
+server ansible_host=TODOIP ansible_user=sharknoon ansible_connection=ssh ansible_ssh_private_key_file=TODOLOCATION

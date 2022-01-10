@@ -1,0 +1,35 @@
+---
+# Update the packages after the first start to get the newest versions ready
+- name: Update packages
+  apt:
+    update_cache: yes
+    upgrade: yes
+
+# Install all the essential packages like docker
+- name: Install essential packages
+  package:
+    name: "{{ packages }}"
+    state: latest
+
+# Disable sudo password requests to allow automated tasks by this user
+- name: Enable passwordless sudo for "{{ username }}"
+  lineinfile:
+    dest: /etc/sudoers
+    regexp: "^%wheel"
+    line: "{{ username }} ALL=(ALL) NOPASSWD: ALL"
+  validate: "/usr/sbin/visudo -cf %s"
+
+# To improve security, disable ssh password auth => only ssh key file auth
+- name: Disable ssh password auth
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^#PasswordAuthentification yes"
+    line: "PasswordAuthentification no"
+  register: sshd_config
+
+# Restart ssh to apply above changes to the config
+- name: Restart ssh daemon
+  service:
+    name: ssdh
+    state: restarted
+  when: sshd_config.changed
